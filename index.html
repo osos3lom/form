@@ -107,21 +107,6 @@
   </header>
 
   <form id="f" novalidate>
-    <div class="row">
-      <div class="field" data-f="firstName">
-        <label for="firstName">الإسم الأول<span class="req">*</span></label>
-        <p class="hint">باللغة الإنجليزية فقط، مثال: Mohammed</p>
-        <input type="text" id="firstName" class="ltr-text" maxlength="30" autocomplete="off" spellcheck="false" lang="en">
-        <div class="err"></div>
-      </div>
-      <div class="field" data-f="lastName">
-        <label for="lastName">الإسم الأخير<span class="req">*</span></label>
-        <p class="hint">باللغة الإنجليزية فقط، مثال: Alghamdi</p>
-        <input type="text" id="lastName" class="ltr-text" maxlength="30" autocomplete="off" spellcheck="false" lang="en">
-        <div class="err"></div>
-      </div>
-    </div>
-
     <div class="field" data-f="bookingType">
       <span class="legend">رقم الحجز<span class="req">*</span></span>
       <p class="hint">اختر صيغة رقم الحجز الموجود لدى العميل.</p>
@@ -150,7 +135,7 @@
 
     <div class="field" data-f="tickets">
       <span class="legend">رقم التذاكر المراد استرجاعها<span class="req">*</span></span>
-      <p class="hint">كل رقم تذكرة يتكون من 10 أرقام بالضبط. يمكن إضافة 8 تذاكر كحد أقصى.</p>
+      <p class="hint">كل رقم تذكرة يبدأ بـ <b class="ltr">065</b> ويتكون من 10 أرقام بالضبط. يمكن إضافة 8 تذاكر كحد أقصى.</p>
       <div id="ticketList" class="tickets"></div>
       <div class="ticket-bar">
         <button type="button" class="secondary small" id="addTicket">+ إضافة تذكرة</button>
@@ -169,10 +154,14 @@
       <div class="err"></div>
     </div>
 
-    <div class="field" data-f="holder">
-      <label for="holder">اسم صاحب الحساب<span class="req">*</span></label>
-      <p class="hint">باللغة الإنجليزية كما هو مسجل في البنك (اسمان على الأقل)، مثال: Mohammed Alghamdi</p>
-      <input type="text" id="holder" class="ltr-text" maxlength="80" autocomplete="off" spellcheck="false" lang="en">
+    <div class="field" data-f="vouchers">
+      <span class="legend">رقم القسيمة/القسائم</span>
+      <p class="hint">اختياري. كل رقم قسيمة يبدأ بـ <b class="ltr">0652</b> ويتكون من 10 أرقام بالضبط. يمكن إضافة 8 قسائم كحد أقصى.</p>
+      <div id="voucherList" class="tickets"></div>
+      <div class="ticket-bar">
+        <button type="button" class="secondary small" id="addVoucher">+ إضافة قسيمة</button>
+        <span class="count" id="voucherCount"></span>
+      </div>
       <div class="err"></div>
     </div>
 
@@ -184,9 +173,24 @@
       <div class="err"></div>
     </div>
 
+    <div class="row">
+      <div class="field" data-f="firstName">
+        <label for="firstName">الإسم الأول لصاحب الحساب<span class="req">*</span></label>
+        <p class="hint">باللغة الإنجليزية كما هو مسجل في البنك، مثال: Mohammed</p>
+        <input type="text" id="firstName" class="ltr-text" maxlength="30" autocomplete="off" spellcheck="false" lang="en">
+        <div class="err"></div>
+      </div>
+      <div class="field" data-f="lastName">
+        <label for="lastName">الإسم الأخير لصاحب الحساب<span class="req">*</span></label>
+        <p class="hint">باللغة الإنجليزية كما هو مسجل في البنك، مثال: Alghamdi</p>
+        <input type="text" id="lastName" class="ltr-text" maxlength="30" autocomplete="off" spellcheck="false" lang="en">
+        <div class="err"></div>
+      </div>
+    </div>
+
     <div class="field" data-f="iban">
       <label for="iban">رقم الايبان<span class="req">*</span></label>
-      <p class="hint">آيبان سعودي: SA متبوعة بـ 22 رقمًا (24 خانة).</p>
+      <p class="hint">24 خانة، مثال: SA0380000000608010167519. للاسترجاع على البطاقات الائتمانية (أمريكان إكسبريس، فيزا، ماستركارد...) أدخل <b class="ltr">SA000000000000000000000</b></p>
       <input type="text" id="iban" class="ltr" maxlength="29" autocomplete="off" spellcheck="false" placeholder="SA00 0000 0000 0000 0000 0000">
       <div class="meta"><span class="bank-detected"></span><span class="count"></span></div>
       <div class="err"></div>
@@ -207,9 +211,18 @@
     </div>
 
     <div class="field" data-f="notes">
-      <label for="notes">ملاحظات<span class="req">*</span></label>
+      <label for="notes">ملاحظات</label>
       <textarea id="notes" maxlength="300"></textarea>
       <div class="meta"><span></span><span class="count"></span></div>
+      <div class="err"></div>
+    </div>
+
+    <div class="field" data-f="notified">
+      <span class="legend">هل تم إشعار الضيف بأنه سيتم الإسترجاع بناء على المعلومات المرفقة في الجدول؟<span class="req">*</span></span>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="notified" value="نعم"> نعم</label>
+        <label class="choice"><input type="radio" name="notified" value="لا"> لا</label>
+      </div>
       <div class="err"></div>
     </div>
 
@@ -239,22 +252,28 @@ const CONFIG = {
   formId: "DQSIkWdsW0yxEjajBLZtrQAAAAAAAAAAAAO__q3ljPdUQ0oxTFEyMThGUlE5UFpDOENBUzAwM1VMRC4u",
   // Microsoft Forms question IDs (pre-fill parameter names)
   q: {
-    firstName:     "rf6eaafa775a84b008b4dd4590a613800",
-    lastName:      "rbdc36487e9714064aef2af0db88b9781",
     bookingCode:   "ra67d09726d95451daf0eb943f61f998e",
     bookingNumber: "r91871181bf0f4a7aaaa57a46261b4842",
     tickets:       "rc478b3d427c44fba90fbd73f3db98a0e",
     mobile:        "rd64334aa9f264c3a808630d889e04beb",
-    holder:        "rfe042bb7543b413b90aa02a337c64764",
+    vouchers:      "r4f84422b8ce846a397d63110d6eecdd8",
+    firstName:     "rf6eaafa775a84b008b4dd4590a613800",
+    lastName:      "rbdc36487e9714064aef2af0db88b9781",
     nationalId:    "r00ef81e12d6149039864b719dc34ea76",
     iban:          "r50207cc7649a447589563b66732f243a",
     bank:          "rfbb1a0662f344660aa1b2ac27585c879",
     payment:       "r6c8c7c57a23b4dec827acf7fa8bfab6e",
     notes:         "reeda0b1e59514eaeba2b0b4c760e084e",
+    notified:      "r2830a3d5dffe4da787f1ca6688bfc42f",
   },
   // Booking format labels (shown on the review screen only; the Microsoft form has no such question)
   bookingChoices: { code: "أرقام وحروف (6 خانات)", number: "أرقام فقط (12 خانة)" },
-  tickets: { length: 10, maxCount: 8 },
+  tickets:  { prefix: "065",  length: 10, maxCount: 8 },
+  vouchers: { prefix: "0652", length: 10, maxCount: 8 },
+  // ID numbers accepted even though they fail the checksum
+  allowedIds: ["1000000000"],
+  // IBAN values accepted regardless of length (SOP for card refunds: Amex, Visa, Mastercard...)
+  allowedIbans: ["SA000000000000000000000"],
   // Saudi bank codes = IBAN digits 5-6
   banks: {
     "10": "البنك الأهلي السعودي",
@@ -323,13 +342,8 @@ function luhnSaudiId(id) {
   return sum % 10 === 0;
 }
 
-function ibanMod97(iban) {
-  const rearranged = iban.slice(4) + iban.slice(0, 4);
-  const digits = rearranged.replace(/[A-Z]/g, (c) => c.charCodeAt(0) - 55);
-  let rem = 0;
-  for (const ch of digits) rem = (rem * 10 + +ch) % 97;
-  return rem === 1;
-}
+// Bank from a Saudi IBAN's bank code (characters 5-6); "" for other IBANs
+const ibanBank = (iban) => (/^SA\d{4}/.test(iban) && CONFIG.banks[iban.slice(4, 6)]) || "";
 
 const cleanIban = (v) => toLatinDigits(v).toUpperCase().replace(/[^A-Z0-9]/g, "");
 
@@ -347,14 +361,14 @@ function paymentValue() {
 const validators = {
   firstName() {
     const v = squash($("firstName").value);
-    if (!v) return "الإسم الأول مطلوب.";
+    if (!v) return "الإسم الأول لصاحب الحساب مطلوب.";
     if (!NAME_RE.test(v)) return "يجب إدخال الاسم باللغة الإنجليزية فقط (A–Z).";
     if (v.length < 2) return "يجب ألا يقل عن حرفين.";
     return "";
   },
   lastName() {
     const v = squash($("lastName").value);
-    if (!v) return "الإسم الأخير مطلوب.";
+    if (!v) return "الإسم الأخير لصاحب الحساب مطلوب.";
     if (!NAME_RE.test(v)) return "يجب إدخال الاسم باللغة الإنجليزية فقط (A–Z).";
     if (v.length < 2) return "يجب ألا يقل عن حرفين.";
     return "";
@@ -379,38 +393,13 @@ const validators = {
     if (v.length !== 12) return `يجب أن يكون 12 رقمًا بالضبط (المدخل ${v.length}).`;
     return "";
   },
-  // Empty rows are only flagged on submit (force) so a freshly added row isn't red
-  tickets(force) {
-    const inputs = ticketInputs();
-    const { length, maxCount } = CONFIG.tickets;
-    inputs.forEach((i) => i.classList.remove("bad"));
-    if (inputs.length > maxCount) return `الحد الأقصى ${maxCount} تذاكر.`;
-    const errors = [];
-    const seen = new Map();
-    inputs.forEach((inp, i) => {
-      const v = inp.value;
-      let msg = "";
-      if (!v) msg = force ? "فارغة" : "";
-      else if (v.length !== length) msg = `يجب أن تكون ${length} أرقام (المدخل ${v.length})`;
-      else if (seen.has(v)) msg = `مكررة مع التذكرة ${seen.get(v) + 1}`;
-      else seen.set(v, i);
-      if (msg) { inp.classList.add("bad"); errors.push(`التذكرة ${i + 1}: ${msg}`); }
-    });
-    return errors.join(" — ");
-  },
+  tickets: (force) => ticketList.validate(force),
+  vouchers: (force) => voucherList.validate(force),
   mobile() {
     const c = country();
     const v = localMobile($("mobile").value);
     if (!v) return "رقم الجوال مطلوب.";
     if (!c.re.test(v)) return `رقم جوال غير صالح لـ ${c.name} (+${c.code}). مثال: ${c.ex}`;
-    return "";
-  },
-  holder() {
-    const v = squash($("holder").value);
-    if (!v) return "اسم صاحب الحساب مطلوب.";
-    if (!NAME_RE.test(v)) return "يجب إدخال الاسم باللغة الإنجليزية فقط (A–Z).";
-    if (v.split(" ").length < 2) return "أدخل الاسم الأول واسم العائلة على الأقل.";
-    if (v.length < 5) return "الاسم قصير جدًا.";
     return "";
   },
   nationalId() {
@@ -419,23 +408,20 @@ const validators = {
     if (!/^\d+$/.test(v)) return "أرقام فقط.";
     if (v.length !== 10) return `يجب أن يكون 10 أرقام (المدخل ${v.length}).`;
     if (!/^[12]/.test(v)) return "يجب أن يبدأ بـ 1 أو 2.";
-    if (!luhnSaudiId(v)) return "رقم الهوية غير صحيح (فشل التحقق من الرقم).";
+    if (!CONFIG.allowedIds.includes(v) && !luhnSaudiId(v)) return "رقم الهوية غير صحيح (فشل التحقق من الرقم).";
     return "";
   },
   iban() {
     const v = cleanIban($("iban").value);
     if (!v) return "رقم الآيبان مطلوب.";
-    if (!v.startsWith("SA")) return "يجب أن يبدأ الآيبان بـ SA.";
-    if (!/^SA\d+$/.test(v)) return "بعد SA يُسمح بالأرقام فقط.";
+    if (CONFIG.allowedIbans.includes(v)) return "";
     if (v.length !== 24) return `يجب أن يكون 24 خانة (المدخل ${v.length}).`;
-    if (!ibanMod97(v)) return "رقم الآيبان غير صحيح (فشل التحقق من الرقم).";
     return "";
   },
   bank() {
     const v = $("bank").value;
     if (!v) return "اختر اسم البنك.";
-    const code = cleanIban($("iban").value).slice(4, 6);
-    const expected = CONFIG.banks[code];
+    const expected = ibanBank(cleanIban($("iban").value));
     if (expected && v !== expected) return `البنك لا يطابق رقم الآيبان (المتوقع: ${expected}).`;
     return "";
   },
@@ -449,11 +435,15 @@ const validators = {
   },
   notes() {
     const v = $("notes").value.trim();
-    if (!v) return "الملاحظات مطلوبة.";
-    if (v.length < 5) return "اكتب 5 أحرف على الأقل.";
+    if (v && v.length < 5) return "اكتب 5 أحرف على الأقل أو اترك الحقل فارغًا.";
     return "";
   },
+  notified() {
+    return notifiedValue() ? "" : "اختر نعم أو لا.";
+  },
 };
+
+const notifiedValue = () => document.querySelector('input[name="notified"]:checked')?.value || "";
 
 const country = () => CONFIG.countries.find((c) => c.code === $("countryCode").value) || CONFIG.countries[0];
 
@@ -499,7 +489,7 @@ filterInput("iban", (v) => {
   const c = cleanIban(v).slice(0, 24);
   return c.replace(/(.{4})/g, "$1 ").trim(); // group as SA00 0000 ...
 });
-for (const id of ["firstName", "lastName", "holder"]) {
+for (const id of ["firstName", "lastName"]) {
   filterInput(id, (v) => v.replace(/[^a-zA-Z\s'-]/g, "").replace(/\s{2,}/g, " "));
 }
 
@@ -534,7 +524,7 @@ document.querySelectorAll('input[name="bookingType"]').forEach((r) => r.addEvent
 
 $("iban").addEventListener("input", () => {
   const v = cleanIban($("iban").value);
-  const bank = v.length >= 6 ? CONFIG.banks[v.slice(4, 6)] : "";
+  const bank = ibanBank(v);
   fieldBox("iban").querySelector(".bank-detected").textContent = bank ? `البنك: ${bank}` : "";
   if (bank) { $("bank").value = bank; touched.add("bank"); check("bank"); }
 });
@@ -559,87 +549,127 @@ $("mobile").addEventListener("focusout", () => {
   if (country().re.test(n)) $("mobile").value = n;
 });
 
-/* ---------- ticket list ---------- */
-const ticketInputs = () => [...$("ticketList").querySelectorAll("input")];
+/* ---------- number lists (tickets / vouchers) ---------- */
+// A list of fixed-length numbers sharing a prefix, with add / remove rows.
+// Required lists flag empty rows on submit; optional lists ignore them.
+function makeNumberList({ name, listId, addId, countId, itemLabel, cfg, required }) {
+  const { prefix, length, maxCount } = cfg;
+  const list = $(listId);
+  const inputs = () => [...list.querySelectorAll("input")];
 
-function renumberTickets() {
-  const rows = [...$("ticketList").children];
-  rows.forEach((row, i) => {
-    row.querySelector(".num").textContent = `تذكرة ${i + 1}`;
-    row.querySelector("input").setAttribute("aria-label", `رقم التذكرة ${i + 1}`);
-    row.querySelector(".remove").hidden = rows.length === 1;
-  });
-  const max = CONFIG.tickets.maxCount;
-  $("addTicket").disabled = rows.length >= max;
-  $("ticketCount").textContent = `${rows.length} / ${max}`;
+  function renumber() {
+    const rows = [...list.children];
+    rows.forEach((row, i) => {
+      row.querySelector(".num").textContent = `${itemLabel} ${i + 1}`;
+      row.querySelector("input").setAttribute("aria-label", `رقم ${itemLabel} ${i + 1}`);
+      row.querySelector(".remove").hidden = rows.length === 1;
+    });
+    $(addId).disabled = rows.length >= maxCount;
+    $(countId).textContent = `${rows.length} / ${maxCount}`;
+  }
+
+  function add(focus = true) {
+    if (list.children.length >= maxCount) return;
+    const row = document.createElement("div");
+    row.className = "ticket";
+    row.innerHTML = `<span class="num"></span>
+      <input type="text" class="ltr" inputmode="numeric" maxlength="${length}" autocomplete="off" placeholder="${prefix}${"X".repeat(length - prefix.length)}">
+      <span class="len">0/${length}</span>
+      <button type="button" class="remove" title="حذف" aria-label="حذف">×</button>`;
+    const inp = row.querySelector("input");
+    const len = row.querySelector(".len");
+    inp.addEventListener("input", () => {
+      inp.value = onlyDigits(inp.value).slice(0, length);
+      len.textContent = `${inp.value.length}/${length}`;
+      len.classList.toggle("full", inp.value.length === length && inp.value.startsWith(prefix));
+    });
+    // Enter on a complete number adds the next row
+    inp.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter") return;
+      e.preventDefault();
+      if (inp.value.length === length && row === list.lastElementChild) add();
+    });
+    row.querySelector(".remove").addEventListener("click", () => {
+      const next = row.nextElementSibling || row.previousElementSibling;
+      row.remove();
+      renumber();
+      check(name);
+      next && next.querySelector("input").focus();
+    });
+    list.append(row);
+    renumber();
+    if (focus) inp.focus();
+  }
+
+  function reset() {
+    list.replaceChildren();
+    add(false);
+  }
+
+  // Empty rows are only flagged on submit (force) so a freshly added row isn't red.
+  // A wrong prefix is flagged as soon as the typed digits stop matching it.
+  function validate(force) {
+    const all = inputs();
+    all.forEach((i) => i.classList.remove("bad"));
+    const errors = [];
+    const seen = new Map();
+    all.forEach((inp, i) => {
+      const v = inp.value;
+      const n = Math.min(v.length, prefix.length);
+      let msg = "";
+      if (!v) msg = force && required ? "فارغة" : "";
+      else if (v.slice(0, n) !== prefix.slice(0, n)) msg = `يجب أن تبدأ بـ ${prefix}`;
+      else if (v.length !== length) msg = `يجب أن تكون ${length} أرقام (المدخل ${v.length})`;
+      else if (seen.has(v)) msg = `مكررة مع ${itemLabel} ${seen.get(v) + 1}`;
+      else seen.set(v, i);
+      if (msg) { inp.classList.add("bad"); errors.push(`${itemLabel} ${i + 1}: ${msg}`); }
+    });
+    return errors.join(" — ");
+  }
+
+  const values = () => inputs().map((i) => i.value).filter(Boolean);
+
+  $(addId).addEventListener("click", () => { add(); check(name); });
+  reset();
+  return { validate, reset, values };
 }
 
-function addTicket(focus = true) {
-  if ($("ticketList").children.length >= CONFIG.tickets.maxCount) return;
-  const row = document.createElement("div");
-  row.className = "ticket";
-  row.innerHTML = `<span class="num"></span>
-    <input type="text" class="ltr" inputmode="numeric" maxlength="${CONFIG.tickets.length}" autocomplete="off" placeholder="${"0".repeat(CONFIG.tickets.length)}">
-    <span class="len">0/${CONFIG.tickets.length}</span>
-    <button type="button" class="remove" title="حذف التذكرة" aria-label="حذف التذكرة">×</button>`;
-  const inp = row.querySelector("input");
-  const len = row.querySelector(".len");
-  inp.addEventListener("input", () => {
-    inp.value = onlyDigits(inp.value).slice(0, CONFIG.tickets.length);
-    len.textContent = `${inp.value.length}/${CONFIG.tickets.length}`;
-    len.classList.toggle("full", inp.value.length === CONFIG.tickets.length);
-  });
-  // Enter on a complete ticket adds the next one
-  inp.addEventListener("keydown", (e) => {
-    if (e.key !== "Enter") return;
-    e.preventDefault();
-    if (inp.value.length === CONFIG.tickets.length && row === $("ticketList").lastElementChild) addTicket();
-  });
-  row.querySelector(".remove").addEventListener("click", () => {
-    const next = row.nextElementSibling || row.previousElementSibling;
-    row.remove();
-    renumberTickets();
-    check("tickets");
-    next && next.querySelector("input").focus();
-  });
-  $("ticketList").append(row);
-  renumberTickets();
-  if (focus) inp.focus();
-}
-
-function resetTickets() {
-  $("ticketList").replaceChildren();
-  addTicket(false);
-}
-
-$("addTicket").addEventListener("click", () => { addTicket(); check("tickets"); });
-resetTickets();
+const ticketList = makeNumberList({
+  name: "tickets", listId: "ticketList", addId: "addTicket", countId: "ticketCount",
+  itemLabel: "التذكرة", cfg: CONFIG.tickets, required: true,
+});
+const voucherList = makeNumberList({
+  name: "vouchers", listId: "voucherList", addId: "addVoucher", countId: "voucherCount",
+  itemLabel: "القسيمة", cfg: CONFIG.vouchers, required: false,
+});
 
 /* ---------- collect values ---------- */
 function collect() {
   const t = bookingType();
   return {
-    firstName: squash($("firstName").value),
-    lastName: squash($("lastName").value),
     bookingType: t ? CONFIG.bookingChoices[t] : "",
     bookingCode: t === "code" ? $("bookingCode").value : "",
     bookingNumber: t === "number" ? $("bookingNumber").value : "",
-    tickets: ticketInputs().map((i) => i.value).join(", "),
+    tickets: ticketList.values().join(", "),
     mobile: fullMobile(),
-    holder: squash($("holder").value),
+    vouchers: voucherList.values().join(", "),
     nationalId: $("nationalId").value,
+    firstName: squash($("firstName").value),
+    lastName: squash($("lastName").value),
     iban: cleanIban($("iban").value),
     bank: $("bank").value,
     payment: paymentValue(),
     notes: $("notes").value.trim(),
+    notified: notifiedValue(),
   };
 }
 
 const LABELS = {
-  firstName: "الإسم الأول", lastName: "الإسم الأخير", bookingType: "صيغة رقم الحجز",
-  bookingCode: "رمز الحجز (6 خانات)", bookingNumber: "رقم الحجز (12 رقم)",
-  tickets: "رقم التذاكر المراد استرجاعها", mobile: "الجوال", holder: "اسم صاحب الحساب",
-  nationalId: "رقم الهوية", iban: "رقم الايبان", bank: "اسم البنك", payment: "طريقة الدفع", notes: "ملاحظات",
+  bookingType: "صيغة رقم الحجز", bookingCode: "رمز الحجز (6 خانات)", bookingNumber: "رقم الحجز (12 رقم)",
+  tickets: "رقم التذاكر المراد استرجاعها", mobile: "الجوال", vouchers: "رقم القسيمة/القسائم",
+  nationalId: "رقم الهوية", firstName: "الإسم الأول لصاحب الحساب", lastName: "الإسم الأخير لصاحب الحساب",
+  iban: "رقم الايبان", bank: "اسم البنك", payment: "طريقة الدفع", notes: "ملاحظات",
+  notified: "هل تم إشعار الضيف بالإسترجاع؟",
 };
 
 function buildUrl(data) {
@@ -672,7 +702,7 @@ $("f").addEventListener("submit", (e) => {
     const tr = document.createElement("tr");
     const th = document.createElement("th"); th.textContent = LABELS[k];
     const td = document.createElement("td"); td.textContent = v;
-    if (/^(bookingCode|bookingNumber|tickets|mobile|nationalId|iban)$/.test(k)) td.className = "ltr";
+    if (/^(bookingCode|bookingNumber|tickets|vouchers|mobile|nationalId|iban)$/.test(k)) td.className = "ltr";
     tr.append(th, td);
     return tr;
   }));
@@ -702,7 +732,8 @@ $("resetBtn").addEventListener("click", () => {
   fieldBox("bookingCode").hidden = fieldBox("bookingNumber").hidden = true;
   $("paymentOther").hidden = true;
   updateMobileHint();
-  resetTickets();
+  ticketList.reset();
+  voucherList.reset();
   fieldBox("iban").querySelector(".bank-detected").textContent = "";
   for (const [id, max] of Object.entries(counters)) updateCount(id, max);
   $("summaryError").hidden = true;

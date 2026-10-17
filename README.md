@@ -8,21 +8,22 @@ page opens the official Microsoft Form **already filled in**, and the agent pres
 
 | Field | Rule |
 |---|---|
-| الإسم الأول / الأخير | English letters only (A–Z), 2–30 chars |
-| رقم الحجز (type) | Required choice; shows only the matching field |
+| رقم الحجز (type) | Required choice; shows only the matching field (not sent to Microsoft Forms) |
 | رمز الحجز | Exactly 6 chars, A–Z / 0–9, auto-uppercased, must contain a letter |
 | رقم الحجز | Exactly 12 digits |
-| رقم التذاكر | One box per ticket (add / remove, max 8); each exactly 10 digits, no duplicates |
+| رقم التذاكر | One box per ticket (add / remove, max 8); each exactly 10 digits starting with `065`, no duplicates |
 | الجوال | Country code picked from a list (default +966); number checked against that country's mobile format; sent as `+966512345678` |
-| اسم صاحب الحساب | English letters only, at least 2 words |
-| رقم الهوية | 10 digits, starts with 1 or 2, checksum verified |
-| رقم الايبان | `SA` + 22 digits, mod-97 checksum verified |
-| اسم البنك | Auto-selected from the IBAN bank code; must match it |
+| رقم القسيمة/القسائم | Optional. One box per voucher (max 8); each exactly 10 digits starting with `0652`, no duplicates |
+| رقم الهوية | 10 digits, starts with 1 or 2, checksum verified (`1000000000` is always accepted; see `CONFIG.allowedIds`) |
+| الإسم الأول / الأخير لصاحب الحساب | English letters only (A–Z), 2–30 chars; entered once, just before the IBAN |
+| رقم الايبان | Exactly 24 characters (letters/digits, spaces ignored). SOP value `SA000000000000000000000` is always accepted for card refunds (see `CONFIG.allowedIbans`) |
+| اسم البنك | Auto-selected from a Saudi (`SA…`) IBAN's bank code; must match it |
 | طريقة الدفع | Fixed list (+ "أخرى" with free text) |
-| ملاحظات | 5–300 chars |
+| ملاحظات | Optional; if filled, 5–300 chars |
+| هل تم إشعار الضيف…؟ | Required yes / no |
 
 Arabic-Indic digits (٠١٢…) are converted to 0–9 automatically.
-Rules, country codes, bank codes and payment methods are in the `CONFIG` block at the top of the script.
+Rules (including the ticket / voucher prefixes and lengths), country codes, bank codes and payment methods are in the `CONFIG` block at the top of the script.
 
 ## Publish on GitHub Pages
 
