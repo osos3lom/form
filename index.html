@@ -1,0 +1,717 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>استرجاع التذاكر</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap">
+<style>
+  :root {
+    --primary: #03787c;
+    --primary-dark: #014446;
+    --bg: #eef5f5;
+    --card: #ffffff;
+    --text: #1d2a2b;
+    --muted: #5d6b6c;
+    --border: #cfdcdc;
+    --error: #c62828;
+    --error-bg: #fdecec;
+    --ok: #2e7d32;
+    --field-bg: #fbfdfd;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --primary: #3fb6ba; --primary-dark: #8fdadc; --bg: #0f1a1b; --card: #172526;
+      --text: #e4eeee; --muted: #9fb2b3; --border: #2f4546; --error: #ff8a80;
+      --error-bg: #3a1f1f; --ok: #81c784; --field-bg: #1c2d2e;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: "Tajawal", system-ui, "Segoe UI", Tahoma, sans-serif; line-height: 1.6;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 24px 16px 48px; }
+  header {
+    background: linear-gradient(135deg, var(--primary), #014446);
+    color: #fff; border-radius: 12px 12px 0 0; padding: 28px 24px;
+  }
+  header h1 { margin: 0; font-size: 1.45rem; }
+  header p { margin: 6px 0 0; opacity: .85; font-size: .95rem; }
+  form, .review { background: var(--card); border-radius: 0 0 12px 12px; padding: 8px 24px 24px; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+  .field { padding: 16px 0; border-bottom: 1px solid var(--border); }
+  .field:last-of-type { border-bottom: 0; }
+  label, .legend { display: block; font-weight: 700; margin-bottom: 6px; }
+  .req { color: var(--error); margin-inline-start: 2px; }
+  .hint { color: var(--muted); font-size: .85rem; margin: 0 0 8px; }
+  input[type=text], input[type=tel], select, textarea {
+    width: 100%; font: inherit; color: var(--text); background: var(--field-bg);
+    border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; outline: none;
+  }
+  textarea { min-height: 96px; resize: vertical; }
+  input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent); }
+  .phone { display: flex; gap: 8px; direction: ltr; }
+  .phone select { width: auto; flex: 0 0 auto; max-width: 48%; direction: ltr; }
+  .phone input { flex: 1; min-width: 0; }
+  .tickets { display: grid; gap: 8px; }
+  .ticket { display: flex; align-items: center; gap: 8px; }
+  .ticket .num { flex: 0 0 64px; color: var(--muted); font-size: .85rem; font-weight: 500; }
+  .ticket input { flex: 1; min-width: 0; }
+  .ticket .len { flex: 0 0 44px; color: var(--muted); font-size: .8rem; text-align: center; direction: ltr; }
+  .ticket .len.full { color: var(--ok); font-weight: 700; }
+  .ticket .remove { flex: 0 0 auto; width: 38px; height: 38px; padding: 0; font-size: 1.2rem; line-height: 1; background: transparent; color: var(--error); border: 1px solid var(--border); }
+  .ticket .remove:hover { border-color: var(--error); }
+  .invalid .ticket input:not(.bad) { border-color: var(--border); background: var(--field-bg); }
+  .valid .ticket input { border-color: var(--ok); }
+  .ticket input.bad { border-color: var(--error); background: var(--error-bg); }
+  .ticket-bar { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+  .ticket-bar .count { color: var(--muted); font-size: .8rem; }
+  .count { direction: ltr; unicode-bidi: isolate; }
+  button.small { padding: 8px 14px; font-size: .9rem; }
+  .ltr-text { direction: ltr; text-align: left; }
+  .ltr { direction: ltr; text-align: left; font-family: ui-monospace, Consolas, monospace; letter-spacing: .5px; }
+  .invalid input, .invalid select, .invalid textarea { border-color: var(--error); background: var(--error-bg); }
+  .valid input, .valid select, .valid textarea { border-color: var(--ok); }
+  .err { color: var(--error); font-size: .85rem; margin-top: 6px; min-height: 0; }
+  .err:empty { display: none; }
+  .meta { display: flex; justify-content: space-between; color: var(--muted); font-size: .8rem; margin-top: 4px; }
+  .choices { display: grid; gap: 8px; }
+  .choice { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-weight: 500; }
+  .choice:has(input:checked) { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, transparent); }
+  .choice input { accent-color: var(--primary); width: 18px; height: 18px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+  .row .field { border-bottom: 1px solid var(--border); }
+  @media (max-width: 560px) { .row { grid-template-columns: 1fr; } }
+  [hidden] { display: none !important; }
+  .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+  button {
+    font: inherit; font-weight: 700; border: 0; border-radius: 8px; padding: 12px 22px; cursor: pointer;
+    background: var(--primary); color: #fff;
+  }
+  button.secondary { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  .summary-error { background: var(--error-bg); color: var(--error); border-radius: 8px; padding: 10px 14px; margin-top: 16px; }
+  .review table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+  .review th, .review td { text-align: right; padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .review th { color: var(--muted); font-weight: 500; width: 40%; }
+  .review td { font-weight: 700; word-break: break-word; }
+  .notice { font-size: .85rem; color: var(--muted); margin-top: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>نموذج استرجاع التذاكر لموظفي استقبال المكالمات</h1>
+    <p>يتم التحقق من جميع الحقول قبل الإرسال. الحقول المعلَّمة بـ <span style="color:#ffd6d6">*</span> إلزامية.</p>
+  </header>
+
+  <form id="f" novalidate>
+    <div class="row">
+      <div class="field" data-f="firstName">
+        <label for="firstName">الإسم الأول<span class="req">*</span></label>
+        <p class="hint">باللغة الإنجليزية فقط، مثال: Mohammed</p>
+        <input type="text" id="firstName" class="ltr-text" maxlength="30" autocomplete="off" spellcheck="false" lang="en">
+        <div class="err"></div>
+      </div>
+      <div class="field" data-f="lastName">
+        <label for="lastName">الإسم الأخير<span class="req">*</span></label>
+        <p class="hint">باللغة الإنجليزية فقط، مثال: Alghamdi</p>
+        <input type="text" id="lastName" class="ltr-text" maxlength="30" autocomplete="off" spellcheck="false" lang="en">
+        <div class="err"></div>
+      </div>
+    </div>
+
+    <div class="field" data-f="bookingType">
+      <span class="legend">رقم الحجز<span class="req">*</span></span>
+      <p class="hint">اختر صيغة رقم الحجز الموجود لدى العميل.</p>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="bookingType" value="code"> أرقام وحروف (6 خانات)</label>
+        <label class="choice"><input type="radio" name="bookingType" value="number"> أرقام فقط (12 خانة)</label>
+      </div>
+      <div class="err"></div>
+    </div>
+
+    <div class="field" data-f="bookingCode" hidden>
+      <label for="bookingCode">رمز الحجز (6 خانات)<span class="req">*</span></label>
+      <p class="hint">6 خانات من الحروف الإنجليزية والأرقام فقط، مثال: AB12C3</p>
+      <input type="text" id="bookingCode" class="ltr" maxlength="6" autocomplete="off" spellcheck="false">
+      <div class="meta"><span></span><span class="count"></span></div>
+      <div class="err"></div>
+    </div>
+
+    <div class="field" data-f="bookingNumber" hidden>
+      <label for="bookingNumber">رقم الحجز (12 رقم)<span class="req">*</span></label>
+      <p class="hint">12 رقمًا بالضبط.</p>
+      <input type="text" id="bookingNumber" class="ltr" inputmode="numeric" maxlength="12" autocomplete="off">
+      <div class="meta"><span></span><span class="count"></span></div>
+      <div class="err"></div>
+    </div>
+
+    <div class="field" data-f="tickets">
+      <span class="legend">رقم التذاكر المراد استرجاعها<span class="req">*</span></span>
+      <p class="hint">كل رقم تذكرة يتكون من 10 أرقام بالضبط. يمكن إضافة 8 تذاكر كحد أقصى.</p>
+      <div id="ticketList" class="tickets"></div>
+      <div class="ticket-bar">
+        <button type="button" class="secondary small" id="addTicket">+ إضافة تذكرة</button>
+        <span class="count" id="ticketCount"></span>
+      </div>
+      <div class="err"></div>
+    </div>
+
+    <div class="field" data-f="mobile">
+      <label for="mobile">الجوال<span class="req">*</span></label>
+      <p class="hint" id="mobileHint"></p>
+      <div class="phone">
+        <select id="countryCode" aria-label="رمز الدولة"></select>
+        <input type="tel" id="mobile" class="ltr" inputmode="numeric" maxlength="15" autocomplete="off">
+      </div>
+      <div class="err"></div>
+    </div>
+
+    <div class="field" data-f="holder">
+      <label for="holder">اسم صاحب الحساب<span class="req">*</span></label>
+      <p class="hint">باللغة الإنجليزية كما هو مسجل في البنك (اسمان على الأقل)، مثال: Mohammed Alghamdi</p>
+      <input type="text" id="holder" class="ltr-text" maxlength="80" autocomplete="off" spellcheck="false" lang="en">
+      <div class="err"></div>
+    </div>
+
+    <div class="field" data-f="nationalId">
+      <label for="nationalId">رقم الهوية<span class="req">*</span></label>
+      <p class="hint">10 أرقام تبدأ بـ 1 (مواطن) أو 2 (مقيم).</p>
+      <input type="text" id="nationalId" class="ltr" inputmode="numeric" maxlength="10" autocomplete="off">
+      <div class="meta"><span></span><span class="count"></span></div>
+      <div class="err"></div>
+    </div>
+
+    <div class="field" data-f="iban">
+      <label for="iban">رقم الايبان<span class="req">*</span></label>
+      <p class="hint">آيبان سعودي: SA متبوعة بـ 22 رقمًا (24 خانة).</p>
+      <input type="text" id="iban" class="ltr" maxlength="29" autocomplete="off" spellcheck="false" placeholder="SA00 0000 0000 0000 0000 0000">
+      <div class="meta"><span class="bank-detected"></span><span class="count"></span></div>
+      <div class="err"></div>
+    </div>
+
+    <div class="field" data-f="bank">
+      <label for="bank">اسم البنك<span class="req">*</span></label>
+      <p class="hint">يُحدَّد تلقائيًا من رقم الآيبان، ويجب أن يطابقه.</p>
+      <select id="bank"><option value="">— اختر البنك —</option></select>
+      <div class="err"></div>
+    </div>
+
+    <div class="field" data-f="payment">
+      <label for="payment">طريقة الدفع<span class="req">*</span></label>
+      <select id="payment"><option value="">— اختر طريقة الدفع —</option></select>
+      <input type="text" id="paymentOther" maxlength="40" placeholder="حدد طريقة الدفع" style="margin-top:8px" hidden>
+      <div class="err"></div>
+    </div>
+
+    <div class="field" data-f="notes">
+      <label for="notes">ملاحظات<span class="req">*</span></label>
+      <textarea id="notes" maxlength="300"></textarea>
+      <div class="meta"><span></span><span class="count"></span></div>
+      <div class="err"></div>
+    </div>
+
+    <div id="summaryError" class="summary-error" hidden></div>
+    <div class="actions">
+      <button type="submit">مراجعة البيانات</button>
+      <button type="button" class="secondary" id="resetBtn">مسح النموذج</button>
+    </div>
+  </form>
+
+  <section class="review" id="review" hidden>
+    <h2 style="margin:16px 0 0;font-size:1.2rem">راجع البيانات قبل الإرسال</h2>
+    <table id="reviewTable"></table>
+    <div class="actions">
+      <button type="button" id="sendBtn">فتح النموذج الرسمي لإرسال الطلب</button>
+      <button type="button" class="secondary" id="copyBtn">نسخ البيانات</button>
+      <button type="button" class="secondary" id="editBtn">تعديل</button>
+    </div>
+    <p class="notice">سيُفتح نموذج Microsoft الرسمي في نافذة جديدة والبيانات معبأة مسبقًا. تأكد من الضغط على زر <b>Submit / إرسال</b> هناك لإتمام الطلب.</p>
+  </section>
+</div>
+
+<script>
+/* ===================== الإعدادات ===================== */
+const CONFIG = {
+  formUrl: "https://forms.office.com/Pages/ResponsePage.aspx",
+  formId: "DQSIkWdsW0yxEjajBLZtrQAAAAAAAAAAAAO__q3ljPdUQ0oxTFEyMThGUlE5UFpDOENBUzAwM1VMRC4u",
+  // Microsoft Forms question IDs (pre-fill parameter names)
+  q: {
+    firstName:     "rf6eaafa775a84b008b4dd4590a613800",
+    lastName:      "rbdc36487e9714064aef2af0db88b9781",
+    bookingType:   "r457d3447c16744dba20c893f48dd86d2",
+    bookingCode:   "ra67d09726d95451daf0eb943f61f998e",
+    bookingNumber: "r91871181bf0f4a7aaaa57a46261b4842",
+    tickets:       "rc478b3d427c44fba90fbd73f3db98a0e",
+    mobile:        "rd64334aa9f264c3a808630d889e04beb",
+    holder:        "rfe042bb7543b413b90aa02a337c64764",
+    nationalId:    "r00ef81e12d6149039864b719dc34ea76",
+    iban:          "r50207cc7649a447589563b66732f243a",
+    bank:          "rfbb1a0662f344660aa1b2ac27585c879",
+    payment:       "r6c8c7c57a23b4dec827acf7fa8bfab6e",
+    notes:         "reeda0b1e59514eaeba2b0b4c760e084e",
+  },
+  // Exact choice texts in the Microsoft form
+  bookingChoices: { code: "أرقام وحروف (6 خانات)", number: "أرقام فقط (12 خانة)" },
+  // Microsoft pre-filled links wrap choice answers in double quotes
+  quoteChoices: true,
+  tickets: { length: 10, maxCount: 8 },
+  // Saudi bank codes = IBAN digits 5-6
+  banks: {
+    "10": "البنك الأهلي السعودي",
+    "40": "البنك الأهلي السعودي",
+    "80": "مصرف الراجحي",
+    "20": "بنك الرياض",
+    "05": "مصرف الإنماء",
+    "15": "بنك البلاد",
+    "60": "بنك الجزيرة",
+    "45": "البنك السعودي الأول (ساب)",
+    "50": "البنك السعودي الأول (ساب)",
+    "55": "البنك السعودي الفرنسي",
+    "30": "البنك العربي الوطني",
+    "65": "البنك السعودي للاستثمار",
+    "90": "بنك الخليج الدولي",
+    "95": "بنك الإمارات دبي الوطني",
+  },
+  // Mobile country codes: local number pattern WITHOUT the leading 0, plus an example
+  countries: [
+    { code: "966", name: "السعودية",  flag: "🇸🇦", re: /^5\d{8}$/,          ex: "512345678" },
+    { code: "971", name: "الإمارات",  flag: "🇦🇪", re: /^5\d{8}$/,          ex: "501234567" },
+    { code: "965", name: "الكويت",    flag: "🇰🇼", re: /^[569]\d{7}$/,      ex: "51234567" },
+    { code: "974", name: "قطر",       flag: "🇶🇦", re: /^[3567]\d{7}$/,     ex: "33123456" },
+    { code: "973", name: "البحرين",   flag: "🇧🇭", re: /^[36]\d{7}$/,       ex: "36001234" },
+    { code: "968", name: "عُمان",     flag: "🇴🇲", re: /^[79]\d{7}$/,       ex: "92123456" },
+    { code: "20",  name: "مصر",       flag: "🇪🇬", re: /^1[0125]\d{8}$/,    ex: "1001234567" },
+    { code: "962", name: "الأردن",    flag: "🇯🇴", re: /^7[789]\d{7}$/,     ex: "791234567" },
+    { code: "967", name: "اليمن",     flag: "🇾🇪", re: /^7\d{8}$/,          ex: "712345678" },
+    { code: "249", name: "السودان",   flag: "🇸🇩", re: /^[19]\d{8}$/,       ex: "912345678" },
+    { code: "963", name: "سوريا",     flag: "🇸🇾", re: /^9\d{8}$/,          ex: "944567890" },
+    { code: "961", name: "لبنان",     flag: "🇱🇧", re: /^\d{7,8}$/,         ex: "71123456" },
+    { code: "964", name: "العراق",    flag: "🇮🇶", re: /^7\d{9}$/,          ex: "7901234567" },
+    { code: "212", name: "المغرب",    flag: "🇲🇦", re: /^[67]\d{8}$/,       ex: "612345678" },
+    { code: "216", name: "تونس",      flag: "🇹🇳", re: /^[2459]\d{7}$/,     ex: "20123456" },
+    { code: "213", name: "الجزائر",   flag: "🇩🇿", re: /^[567]\d{8}$/,      ex: "551234567" },
+    { code: "90",  name: "تركيا",     flag: "🇹🇷", re: /^5\d{9}$/,          ex: "5012345678" },
+    { code: "92",  name: "باكستان",   flag: "🇵🇰", re: /^3\d{9}$/,          ex: "3012345678" },
+    { code: "91",  name: "الهند",     flag: "🇮🇳", re: /^[6-9]\d{9}$/,      ex: "9123456789" },
+    { code: "880", name: "بنغلاديش",  flag: "🇧🇩", re: /^1\d{9}$/,          ex: "1712345678" },
+    { code: "63",  name: "الفلبين",   flag: "🇵🇭", re: /^9\d{9}$/,          ex: "9171234567" },
+    { code: "62",  name: "إندونيسيا", flag: "🇮🇩", re: /^8\d{8,11}$/,       ex: "812345678" },
+    { code: "44",  name: "بريطانيا",  flag: "🇬🇧", re: /^7\d{9}$/,          ex: "7123456789" },
+    { code: "1",   name: "أمريكا / كندا", flag: "🇺🇸", re: /^[2-9]\d{9}$/,  ex: "2015550123" },
+  ],
+  paymentMethods: ["مدى", "بطاقة ائتمانية (فيزا / ماستركارد)", "Apple Pay", "STC Pay", "سداد", "تحويل بنكي", "أخرى"],
+};
+/* ===================================================== */
+
+const $ = (id) => document.getElementById(id);
+const fieldBox = (name) => document.querySelector(`.field[data-f="${name}"]`);
+
+// Convert Arabic-Indic / Persian digits to Western digits
+const toLatinDigits = (s) => s
+  .replace(/[٠-٩]/g, (d) => d.charCodeAt(0) - 0x0660)
+  .replace(/[۰-۹]/g, (d) => d.charCodeAt(0) - 0x06F0);
+const squash = (s) => s.replace(/\s+/g, " ").trim();
+const NAME_RE = /^[a-zA-Z\s'-]+$/;
+
+function luhnSaudiId(id) {
+  let sum = 0;
+  for (let i = 0; i < 10; i++) {
+    let d = +id[i];
+    if (i % 2 === 0) { d *= 2; if (d > 9) d -= 9; }
+    sum += d;
+  }
+  return sum % 10 === 0;
+}
+
+function ibanMod97(iban) {
+  const rearranged = iban.slice(4) + iban.slice(0, 4);
+  const digits = rearranged.replace(/[A-Z]/g, (c) => c.charCodeAt(0) - 55);
+  let rem = 0;
+  for (const ch of digits) rem = (rem * 10 + +ch) % 97;
+  return rem === 1;
+}
+
+const cleanIban = (v) => toLatinDigits(v).toUpperCase().replace(/[^A-Z0-9]/g, "");
+
+function bookingType() {
+  const r = document.querySelector('input[name="bookingType"]:checked');
+  return r ? r.value : "";
+}
+
+function paymentValue() {
+  const v = $("payment").value;
+  return v === "أخرى" ? squash($("paymentOther").value) : v;
+}
+
+// Each validator returns "" when valid, or an error message.
+const validators = {
+  firstName() {
+    const v = squash($("firstName").value);
+    if (!v) return "الإسم الأول مطلوب.";
+    if (!NAME_RE.test(v)) return "يجب إدخال الاسم باللغة الإنجليزية فقط (A–Z).";
+    if (v.length < 2) return "يجب ألا يقل عن حرفين.";
+    return "";
+  },
+  lastName() {
+    const v = squash($("lastName").value);
+    if (!v) return "الإسم الأخير مطلوب.";
+    if (!NAME_RE.test(v)) return "يجب إدخال الاسم باللغة الإنجليزية فقط (A–Z).";
+    if (v.length < 2) return "يجب ألا يقل عن حرفين.";
+    return "";
+  },
+  bookingType() {
+    return bookingType() ? "" : "اختر صيغة رقم الحجز.";
+  },
+  bookingCode() {
+    if (bookingType() !== "code") return "";
+    const v = $("bookingCode").value;
+    if (!v) return "رمز الحجز مطلوب.";
+    if (!/^[A-Z0-9]+$/.test(v)) return "حروف إنجليزية وأرقام فقط.";
+    if (v.length !== 6) return `يجب أن يكون 6 خانات بالضبط (المدخل ${v.length}).`;
+    if (!/[A-Z]/.test(v)) return "رمز الحجز يجب أن يحتوي على حرف واحد على الأقل، وإلا اختر «أرقام فقط».";
+    return "";
+  },
+  bookingNumber() {
+    if (bookingType() !== "number") return "";
+    const v = $("bookingNumber").value;
+    if (!v) return "رقم الحجز مطلوب.";
+    if (!/^\d+$/.test(v)) return "أرقام فقط.";
+    if (v.length !== 12) return `يجب أن يكون 12 رقمًا بالضبط (المدخل ${v.length}).`;
+    return "";
+  },
+  // Empty rows are only flagged on submit (force) so a freshly added row isn't red
+  tickets(force) {
+    const inputs = ticketInputs();
+    const { length, maxCount } = CONFIG.tickets;
+    inputs.forEach((i) => i.classList.remove("bad"));
+    if (inputs.length > maxCount) return `الحد الأقصى ${maxCount} تذاكر.`;
+    const errors = [];
+    const seen = new Map();
+    inputs.forEach((inp, i) => {
+      const v = inp.value;
+      let msg = "";
+      if (!v) msg = force ? "فارغة" : "";
+      else if (v.length !== length) msg = `يجب أن تكون ${length} أرقام (المدخل ${v.length})`;
+      else if (seen.has(v)) msg = `مكررة مع التذكرة ${seen.get(v) + 1}`;
+      else seen.set(v, i);
+      if (msg) { inp.classList.add("bad"); errors.push(`التذكرة ${i + 1}: ${msg}`); }
+    });
+    return errors.join(" — ");
+  },
+  mobile() {
+    const c = country();
+    const v = localMobile($("mobile").value);
+    if (!v) return "رقم الجوال مطلوب.";
+    if (!c.re.test(v)) return `رقم جوال غير صالح لـ ${c.name} (+${c.code}). مثال: ${c.ex}`;
+    return "";
+  },
+  holder() {
+    const v = squash($("holder").value);
+    if (!v) return "اسم صاحب الحساب مطلوب.";
+    if (!NAME_RE.test(v)) return "يجب إدخال الاسم باللغة الإنجليزية فقط (A–Z).";
+    if (v.split(" ").length < 2) return "أدخل الاسم الأول واسم العائلة على الأقل.";
+    if (v.length < 5) return "الاسم قصير جدًا.";
+    return "";
+  },
+  nationalId() {
+    const v = $("nationalId").value;
+    if (!v) return "رقم الهوية مطلوب.";
+    if (!/^\d+$/.test(v)) return "أرقام فقط.";
+    if (v.length !== 10) return `يجب أن يكون 10 أرقام (المدخل ${v.length}).`;
+    if (!/^[12]/.test(v)) return "يجب أن يبدأ بـ 1 أو 2.";
+    if (!luhnSaudiId(v)) return "رقم الهوية غير صحيح (فشل التحقق من الرقم).";
+    return "";
+  },
+  iban() {
+    const v = cleanIban($("iban").value);
+    if (!v) return "رقم الآيبان مطلوب.";
+    if (!v.startsWith("SA")) return "يجب أن يبدأ الآيبان بـ SA.";
+    if (!/^SA\d+$/.test(v)) return "بعد SA يُسمح بالأرقام فقط.";
+    if (v.length !== 24) return `يجب أن يكون 24 خانة (المدخل ${v.length}).`;
+    if (!ibanMod97(v)) return "رقم الآيبان غير صحيح (فشل التحقق من الرقم).";
+    return "";
+  },
+  bank() {
+    const v = $("bank").value;
+    if (!v) return "اختر اسم البنك.";
+    const code = cleanIban($("iban").value).slice(4, 6);
+    const expected = CONFIG.banks[code];
+    if (expected && v !== expected) return `البنك لا يطابق رقم الآيبان (المتوقع: ${expected}).`;
+    return "";
+  },
+  payment() {
+    if (!$("payment").value) return "اختر طريقة الدفع.";
+    if ($("payment").value === "أخرى") {
+      const o = squash($("paymentOther").value);
+      if (o.length < 2) return "حدد طريقة الدفع.";
+    }
+    return "";
+  },
+  notes() {
+    const v = $("notes").value.trim();
+    if (!v) return "الملاحظات مطلوبة.";
+    if (v.length < 5) return "اكتب 5 أحرف على الأقل.";
+    return "";
+  },
+};
+
+const country = () => CONFIG.countries.find((c) => c.code === $("countryCode").value) || CONFIG.countries[0];
+
+// Local part of the number: digits only, without the country code or the leading 0
+function localMobile(v) {
+  const c = country();
+  let s = toLatinDigits(v).replace(/\D/g, "");
+  if (s.startsWith("00" + c.code)) s = s.slice(2 + c.code.length);
+  else if (s.startsWith(c.code) && !c.re.test(s)) s = s.slice(c.code.length);
+  return s.replace(/^0+/, "");
+}
+const fullMobile = () => `+${country().code}${localMobile($("mobile").value)}`;
+
+const touched = new Set();
+function check(name, force = false) {
+  const box = fieldBox(name);
+  if (box.hidden) { box.classList.remove("invalid", "valid"); return true; }
+  const msg = validators[name](force);
+  if (force || touched.has(name)) {
+    box.querySelector(".err").textContent = msg;
+    box.classList.toggle("invalid", !!msg);
+    box.classList.toggle("valid", !msg);
+  }
+  return !msg;
+}
+
+/* ---------- input filtering (blocks invalid characters as you type) ---------- */
+function filterInput(id, fn) {
+  const el = $(id);
+  el.addEventListener("input", () => {
+    const pos = el.selectionStart, before = el.value.length;
+    el.value = fn(el.value);
+    const p = Math.max(0, pos - (before - el.value.length));
+    try { el.setSelectionRange(p, p); } catch {}
+  });
+}
+const onlyDigits = (v) => toLatinDigits(v).replace(/\D/g, "");
+filterInput("bookingCode", (v) => toLatinDigits(v).toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6));
+filterInput("bookingNumber", (v) => onlyDigits(v).slice(0, 12));
+filterInput("nationalId", (v) => onlyDigits(v).slice(0, 10));
+filterInput("mobile", (v) => toLatinDigits(v).replace(/\D/g, ""));
+filterInput("iban", (v) => {
+  const c = cleanIban(v).slice(0, 24);
+  return c.replace(/(.{4})/g, "$1 ").trim(); // group as SA00 0000 ...
+});
+for (const id of ["firstName", "lastName", "holder"]) {
+  filterInput(id, (v) => v.replace(/[^a-zA-Z\s'-]/g, "").replace(/\s{2,}/g, " "));
+}
+
+/* ---------- populate selects ---------- */
+const uniqueBanks = [...new Set(Object.values(CONFIG.banks))];
+for (const b of uniqueBanks) $("bank").add(new Option(b, b));
+for (const p of CONFIG.paymentMethods) $("payment").add(new Option(p, p));
+
+/* ---------- character counters ---------- */
+function updateCount(id, max) {
+  const box = $(id).closest(".field");
+  const c = box.querySelector(".count");
+  if (c) c.textContent = `${id === "iban" ? cleanIban($(id).value).length : $(id).value.length} / ${max}`;
+}
+const counters = { bookingCode: 6, bookingNumber: 12, nationalId: 10, iban: 24, notes: 300 };
+
+/* ---------- wiring ---------- */
+for (const name of Object.keys(validators)) {
+  const box = fieldBox(name);
+  box.addEventListener("input", () => { if (counters[name]) updateCount(name, counters[name]); check(name); });
+  box.addEventListener("change", () => { touched.add(name); check(name); });
+  box.addEventListener("focusout", () => { touched.add(name); check(name); });
+}
+for (const [id, max] of Object.entries(counters)) updateCount(id, max);
+
+document.querySelectorAll('input[name="bookingType"]').forEach((r) => r.addEventListener("change", () => {
+  const t = bookingType();
+  fieldBox("bookingCode").hidden = t !== "code";
+  fieldBox("bookingNumber").hidden = t !== "number";
+  (t === "code" ? $("bookingCode") : $("bookingNumber")).focus();
+}));
+
+$("iban").addEventListener("input", () => {
+  const v = cleanIban($("iban").value);
+  const bank = v.length >= 6 ? CONFIG.banks[v.slice(4, 6)] : "";
+  fieldBox("iban").querySelector(".bank-detected").textContent = bank ? `البنك: ${bank}` : "";
+  if (bank) { $("bank").value = bank; touched.add("bank"); check("bank"); }
+});
+$("bank").addEventListener("change", () => check("bank"));
+
+$("payment").addEventListener("change", () => {
+  const other = $("payment").value === "أخرى";
+  $("paymentOther").hidden = !other;
+  if (other) $("paymentOther").focus();
+});
+
+for (const c of CONFIG.countries) $("countryCode").add(new Option(`${c.flag} +${c.code}  ${c.name}`, c.code));
+function updateMobileHint() {
+  const c = country();
+  $("mobileHint").textContent = `اختر رمز الدولة ثم أدخل الرقم بدون الصفر في البداية، مثال: ${c.ex}`;
+  $("mobile").placeholder = c.ex;
+}
+updateMobileHint();
+$("countryCode").addEventListener("change", () => { updateMobileHint(); check("mobile"); $("mobile").focus(); });
+$("mobile").addEventListener("focusout", () => {
+  const n = localMobile($("mobile").value);
+  if (country().re.test(n)) $("mobile").value = n;
+});
+
+/* ---------- ticket list ---------- */
+const ticketInputs = () => [...$("ticketList").querySelectorAll("input")];
+
+function renumberTickets() {
+  const rows = [...$("ticketList").children];
+  rows.forEach((row, i) => {
+    row.querySelector(".num").textContent = `تذكرة ${i + 1}`;
+    row.querySelector("input").setAttribute("aria-label", `رقم التذكرة ${i + 1}`);
+    row.querySelector(".remove").hidden = rows.length === 1;
+  });
+  const max = CONFIG.tickets.maxCount;
+  $("addTicket").disabled = rows.length >= max;
+  $("ticketCount").textContent = `${rows.length} / ${max}`;
+}
+
+function addTicket(focus = true) {
+  if ($("ticketList").children.length >= CONFIG.tickets.maxCount) return;
+  const row = document.createElement("div");
+  row.className = "ticket";
+  row.innerHTML = `<span class="num"></span>
+    <input type="text" class="ltr" inputmode="numeric" maxlength="${CONFIG.tickets.length}" autocomplete="off" placeholder="${"0".repeat(CONFIG.tickets.length)}">
+    <span class="len">0/${CONFIG.tickets.length}</span>
+    <button type="button" class="remove" title="حذف التذكرة" aria-label="حذف التذكرة">×</button>`;
+  const inp = row.querySelector("input");
+  const len = row.querySelector(".len");
+  inp.addEventListener("input", () => {
+    inp.value = onlyDigits(inp.value).slice(0, CONFIG.tickets.length);
+    len.textContent = `${inp.value.length}/${CONFIG.tickets.length}`;
+    len.classList.toggle("full", inp.value.length === CONFIG.tickets.length);
+  });
+  // Enter on a complete ticket adds the next one
+  inp.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    if (inp.value.length === CONFIG.tickets.length && row === $("ticketList").lastElementChild) addTicket();
+  });
+  row.querySelector(".remove").addEventListener("click", () => {
+    const next = row.nextElementSibling || row.previousElementSibling;
+    row.remove();
+    renumberTickets();
+    check("tickets");
+    next && next.querySelector("input").focus();
+  });
+  $("ticketList").append(row);
+  renumberTickets();
+  if (focus) inp.focus();
+}
+
+function resetTickets() {
+  $("ticketList").replaceChildren();
+  addTicket(false);
+}
+
+$("addTicket").addEventListener("click", () => { addTicket(); check("tickets"); });
+resetTickets();
+
+/* ---------- collect values ---------- */
+function collect() {
+  const t = bookingType();
+  return {
+    firstName: squash($("firstName").value),
+    lastName: squash($("lastName").value),
+    bookingType: t ? CONFIG.bookingChoices[t] : "",
+    bookingCode: t === "code" ? $("bookingCode").value : "",
+    bookingNumber: t === "number" ? $("bookingNumber").value : "",
+    tickets: ticketInputs().map((i) => i.value).join(", "),
+    mobile: fullMobile(),
+    holder: squash($("holder").value),
+    nationalId: $("nationalId").value,
+    iban: cleanIban($("iban").value),
+    bank: $("bank").value,
+    payment: paymentValue(),
+    notes: $("notes").value.trim(),
+  };
+}
+
+const LABELS = {
+  firstName: "الإسم الأول", lastName: "الإسم الأخير", bookingType: "صيغة رقم الحجز",
+  bookingCode: "رمز الحجز (6 خانات)", bookingNumber: "رقم الحجز (12 رقم)",
+  tickets: "رقم التذاكر المراد استرجاعها", mobile: "الجوال", holder: "اسم صاحب الحساب",
+  nationalId: "رقم الهوية", iban: "رقم الايبان", bank: "اسم البنك", payment: "طريقة الدفع", notes: "ملاحظات",
+};
+
+function buildUrl(data) {
+  const params = new URLSearchParams({ id: CONFIG.formId });
+  for (const [k, v] of Object.entries(data)) {
+    if (!v) continue;
+    const val = k === "bookingType" && CONFIG.quoteChoices ? `"${v}"` : v;
+    params.append(CONFIG.q[k], val);
+  }
+  return `${CONFIG.formUrl}?${params.toString().replace(/\+/g, "%20")}`;
+}
+
+/* ---------- submit / review ---------- */
+$("f").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const names = Object.keys(validators);
+  names.forEach((n) => touched.add(n));
+  const bad = names.filter((n) => !check(n, true));
+  const se = $("summaryError");
+  if (bad.length) {
+    se.hidden = false;
+    se.textContent = `يوجد ${bad.length} حقل/حقول بحاجة إلى تصحيح.`;
+    const first = fieldBox(bad[0]).querySelector("input, select, textarea");
+    first && first.focus();
+    return;
+  }
+  se.hidden = true;
+  const data = collect();
+  const rows = Object.entries(data).filter(([, v]) => v);
+  const table = $("reviewTable");
+  table.replaceChildren(...rows.map(([k, v]) => {
+    const tr = document.createElement("tr");
+    const th = document.createElement("th"); th.textContent = LABELS[k];
+    const td = document.createElement("td"); td.textContent = v;
+    if (/^(bookingCode|bookingNumber|tickets|mobile|nationalId|iban)$/.test(k)) td.className = "ltr";
+    tr.append(th, td);
+    return tr;
+  }));
+  $("f").hidden = true;
+  $("review").hidden = false;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+$("editBtn").addEventListener("click", () => { $("review").hidden = true; $("f").hidden = false; });
+
+$("sendBtn").addEventListener("click", () => {
+  window.open(buildUrl(collect()), "_blank", "noopener");
+});
+
+$("copyBtn").addEventListener("click", async () => {
+  const text = Object.entries(collect()).filter(([, v]) => v).map(([k, v]) => `${LABELS[k]}: ${v}`).join("\n");
+  try { await navigator.clipboard.writeText(text); $("copyBtn").textContent = "تم النسخ ✓"; }
+  catch { $("copyBtn").textContent = "تعذر النسخ"; }
+  setTimeout(() => ($("copyBtn").textContent = "نسخ البيانات"), 2000);
+});
+
+$("resetBtn").addEventListener("click", () => {
+  if (!confirm("مسح جميع البيانات المدخلة؟")) return;
+  $("f").reset();
+  touched.clear();
+  document.querySelectorAll(".field").forEach((b) => { b.classList.remove("invalid", "valid"); b.querySelector(".err").textContent = ""; });
+  fieldBox("bookingCode").hidden = fieldBox("bookingNumber").hidden = true;
+  $("paymentOther").hidden = true;
+  updateMobileHint();
+  resetTickets();
+  fieldBox("iban").querySelector(".bank-detected").textContent = "";
+  for (const [id, max] of Object.entries(counters)) updateCount(id, max);
+  $("summaryError").hidden = true;
+});
+</script>
+</body>
+</html>
