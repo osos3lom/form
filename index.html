@@ -103,7 +103,7 @@
 <div class="wrap">
   <header>
     <h1>نموذج استرجاع التذاكر لموظفي استقبال المكالمات</h1>
-    <p>يتم التحقق من جميع الحقول قبل الإرسال. الحقول المعلَّمة بـ <span style="color:#ffd6d6">*</span> إلزامية.</p>
+    <p>يتم التحقق من جميع الحقول، ثم يمكن نسخ البيانات للبريد الإلكتروني أو نظام CRM. الحقول المعلَّمة بـ <span style="color:#ffd6d6">*</span> إلزامية.</p>
   </header>
 
   <form id="f" novalidate>
@@ -135,7 +135,7 @@
 
     <div class="field" data-f="tickets">
       <span class="legend">رقم التذاكر المراد استرجاعها<span class="req">*</span></span>
-      <p class="hint">كل رقم تذكرة يبدأ بـ <b class="ltr">065</b> ويتكون من 11 رقمًا بالضبط (الصفر الأول مكتوب مسبقًا). يمكن إضافة 8 تذاكر كحد أقصى.</p>
+      <p class="hint">كل رقم تذكرة يبدأ بـ <b class="ltr">065</b> (مكتوبة مسبقًا) ثم أدخل الأرقام العشرة المتبقية. يمكن إضافة 8 تذاكر كحد أقصى.</p>
       <div id="ticketList" class="tickets"></div>
       <div class="ticket-bar">
         <button type="button" class="secondary small" id="addTicket">+ إضافة تذكرة</button>
@@ -156,7 +156,7 @@
 
     <div class="field" data-f="vouchers">
       <span class="legend">رقم القسيمة/القسائم</span>
-      <p class="hint">اختياري. كل رقم قسيمة يبدأ بـ <b class="ltr">0652</b> ويتكون من 10 أرقام بالضبط. يمكن إضافة 8 قسائم كحد أقصى.</p>
+      <p class="hint">اختياري. كل رقم قسيمة يبدأ بـ <b class="ltr">065</b> (مكتوبة مسبقًا) ثم أدخل الأرقام العشرة المتبقية. يمكن إضافة 8 قسائم كحد أقصى.</p>
       <div id="voucherList" class="tickets"></div>
       <div class="ticket-bar">
         <button type="button" class="secondary small" id="addVoucher">+ إضافة قسيمة</button>
@@ -234,43 +234,27 @@
   </form>
 
   <section class="review" id="review" hidden>
-    <h2 style="margin:16px 0 0;font-size:1.2rem">راجع البيانات قبل الإرسال</h2>
+    <h2 style="margin:16px 0 0;font-size:1.2rem">ملخص الطلب</h2>
     <table id="reviewTable"></table>
     <div class="actions">
-      <button type="button" id="sendBtn">فتح النموذج الرسمي لإرسال الطلب</button>
-      <button type="button" class="secondary" id="copyBtn">نسخ البيانات</button>
-      <button type="button" class="secondary" id="editBtn">تعديل</button>
+      <button type="button" data-copy="text">نسخ كنص</button>
+      <button type="button" class="secondary" data-copy="table">نسخ كجدول (Word / Outlook)</button>
+      <button type="button" class="secondary" data-copy="excel">نسخ لـ Excel</button>
     </div>
-    <p class="notice">سيُفتح نموذج Microsoft الرسمي في نافذة جديدة والبيانات معبأة مسبقًا. تأكد من الضغط على زر <b>Submit / إرسال</b> هناك لإتمام الطلب.</p>
+    <div class="actions">
+      <button type="button" class="secondary" id="editBtn">تعديل</button>
+      <button type="button" class="secondary" id="newBtn">طلب جديد</button>
+    </div>
+    <p class="notice"><b>نسخ كنص</b>: للبريد الإلكتروني أو حقل ملاحظات في CRM. <b>نسخ كجدول</b>: يُلصق كجدول في Word أو Outlook. <b>نسخ لـ Excel</b>: صف عناوين وصف بيانات.</p>
   </section>
 </div>
 
 <script>
 /* ===================== الإعدادات ===================== */
 const CONFIG = {
-  formUrl: "https://forms.office.com/Pages/ResponsePage.aspx",
-  formId: "DQSIkWdsW0yxEjajBLZtrQAAAAAAAAAAAAO__q3ljPdUQ0oxTFEyMThGUlE5UFpDOENBUzAwM1VMRC4u",
-  // Microsoft Forms question IDs (pre-fill parameter names)
-  q: {
-    bookingCode:   "ra67d09726d95451daf0eb943f61f998e",
-    bookingNumber: "r91871181bf0f4a7aaaa57a46261b4842",
-    tickets:       "rc478b3d427c44fba90fbd73f3db98a0e",
-    mobile:        "rd64334aa9f264c3a808630d889e04beb",
-    vouchers:      "r4f84422b8ce846a397d63110d6eecdd8",
-    firstName:     "rf6eaafa775a84b008b4dd4590a613800",
-    lastName:      "rbdc36487e9714064aef2af0db88b9781",
-    nationalId:    "r00ef81e12d6149039864b719dc34ea76",
-    iban:          "r50207cc7649a447589563b66732f243a",
-    bank:          "rfbb1a0662f344660aa1b2ac27585c879",
-    payment:       "r6c8c7c57a23b4dec827acf7fa8bfab6e",
-    notes:         "reeda0b1e59514eaeba2b0b4c760e084e",
-    notified:      "r2830a3d5dffe4da787f1ca6688bfc42f",
-  },
-  // Booking format labels (shown on the review screen only; the Microsoft form has no such question)
-  bookingChoices: { code: "أرقام وحروف (6 خانات)", number: "أرقام فقط (12 خانة)" },
   // prefill: digits already typed in every new box (cannot be deleted)
-  tickets:  { prefix: "065",  length: 11, maxCount: 8, prefill: "0" },
-  vouchers: { prefix: "0652", length: 10, maxCount: 8 },
+  tickets:  { prefix: "065", length: 13, maxCount: 8, prefill: "065" },
+  vouchers: { prefix: "065", length: 13, maxCount: 8, prefill: "065" },
   // ID numbers accepted even though they fail the checksum
   allowedIds: ["1000000000"],
   // IBAN values accepted regardless of length (SOP for card refunds: Amex, Visa, Mastercard...)
@@ -576,7 +560,7 @@ function makeNumberList({ name, listId, addId, countId, itemLabel, cfg, required
     const row = document.createElement("div");
     row.className = "ticket";
     row.innerHTML = `<span class="num"></span>
-      <input type="text" class="ltr" inputmode="numeric" maxlength="${length}" autocomplete="off" placeholder="${prefix}${"X".repeat(length - prefix.length)}">
+      <input type="text" class="ltr" inputmode="numeric" autocomplete="off" placeholder="${prefix}${"X".repeat(length - prefix.length)}">
       <span class="len">0/${length}</span>
       <button type="button" class="remove" title="حذف" aria-label="حذف">×</button>`;
     const inp = row.querySelector("input");
@@ -585,7 +569,10 @@ function makeNumberList({ name, listId, addId, countId, itemLabel, cfg, required
     len.textContent = `${prefill.length}/${length}`;
     inp.addEventListener("input", () => {
       let d = onlyDigits(inp.value);
-      if (!d.startsWith(prefill)) d = prefill + d;
+      // Deleting into the prefill restores it; anything else typed before it gets it prepended
+      if (!d.startsWith(prefill)) d = prefill.startsWith(d) ? prefill : prefill + d;
+      // Pasting / typing the full number (with its own prefix) after the prefill: drop the duplicate
+      if (prefill && d.length > length && d.startsWith(prefill + prefix)) d = d.slice(prefill.length);
       inp.value = d.slice(0, length);
       len.textContent = `${inp.value.length}/${length}`;
       len.classList.toggle("full", inp.value.length === length && inp.value.startsWith(prefix));
@@ -655,41 +642,58 @@ const voucherList = makeNumberList({
   itemLabel: "القسيمة", cfg: CONFIG.vouchers, required: false,
 });
 
-/* ---------- collect values ---------- */
-function collect() {
+/* ---------- summary (what gets copied) ---------- */
+// Ordered [label, value, isLtr] rows; empty optional fields are left out.
+function summaryRows() {
   const t = bookingType();
-  return {
-    bookingType: t ? CONFIG.bookingChoices[t] : "",
-    bookingCode: t === "code" ? $("bookingCode").value : "",
-    bookingNumber: t === "number" ? $("bookingNumber").value : "",
-    tickets: ticketList.values().join(", "),
-    mobile: fullMobile(),
-    vouchers: voucherList.values().join(", "),
-    nationalId: $("nationalId").value,
-    firstName: squash($("firstName").value),
-    lastName: squash($("lastName").value),
-    iban: cleanIban($("iban").value),
-    bank: $("bank").value,
-    payment: paymentValue(),
-    notes: $("notes").value.trim(),
-    notified: notifiedValue(),
-  };
+  const rows = [
+    ["رقم الحجز", t === "code" ? $("bookingCode").value : $("bookingNumber").value, true],
+    ["رقم التذاكر المراد استرجاعها", ticketList.values().join("، "), true],
+    ["رقم الجوال", fullMobile(), true],
+    ["رقم القسيمة/القسائم", voucherList.values().join("، "), true],
+    ["رقم الهوية / الإقامة", $("nationalId").value, true],
+    ["اسم صاحب الحساب", `${squash($("firstName").value)} ${squash($("lastName").value)}`.toUpperCase(), true],
+    ["رقم الآيبان", cleanIban($("iban").value), true],
+    ["اسم البنك", $("bank").value, false],
+    ["طريقة الدفع", paymentValue(), false],
+    ["ملاحظات", $("notes").value.trim(), false],
+    ["تم إشعار الضيف بالاسترجاع", notifiedValue(), false],
+  ];
+  return rows.filter(([, v]) => v);
 }
 
-const LABELS = {
-  bookingType: "صيغة رقم الحجز", bookingCode: "رمز الحجز (6 خانات)", bookingNumber: "رقم الحجز (12 رقم)",
-  tickets: "رقم التذاكر المراد استرجاعها", mobile: "الجوال", vouchers: "رقم القسيمة/القسائم",
-  nationalId: "رقم الهوية", firstName: "الإسم الأول لصاحب الحساب", lastName: "الإسم الأخير لصاحب الحساب",
-  iban: "رقم الايبان", bank: "اسم البنك", payment: "طريقة الدفع", notes: "ملاحظات",
-  notified: "هل تم إشعار الضيف بالإسترجاع؟",
+const escapeHtml = (v) => v.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+const formats = {
+  text: (rows) => ({ text: rows.map(([l, v]) => `${l}: ${v}`).join("\n") }),
+  // Rich table for Word / Outlook, with plain text as the fallback
+  table: (rows) => ({
+    text: rows.map(([l, v]) => `${l}\t${v}`).join("\n"),
+    html: `<table dir="rtl" border="1" cellpadding="6" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:11pt">${
+      rows.map(([l, v]) => `<tr><td style="background:#d9d9c3;font-weight:bold">${escapeHtml(l)}</td><td dir="ltr">${escapeHtml(v)}</td></tr>`).join("")
+    }</table>`,
+  }),
+  // Header row + value row, tab separated, pastes into separate Excel columns
+  excel: (rows) => ({ text: `${rows.map(([l]) => l).join("\t")}\n${rows.map(([, v]) => v).join("\t")}` }),
 };
 
-function buildUrl(data) {
-  const params = new URLSearchParams({ id: CONFIG.formId });
-  for (const [k, v] of Object.entries(data)) {
-    if (v && CONFIG.q[k]) params.append(CONFIG.q[k], v);
+async function copy(kind, btn) {
+  const { text, html } = formats[kind](summaryRows());
+  const label = btn.textContent;
+  try {
+    if (html && window.ClipboardItem) {
+      await navigator.clipboard.write([new ClipboardItem({
+        "text/plain": new Blob([text], { type: "text/plain" }),
+        "text/html": new Blob([html], { type: "text/html" }),
+      })]);
+    } else {
+      await navigator.clipboard.writeText(text);
+    }
+    btn.textContent = "تم النسخ ✓";
+  } catch {
+    btn.textContent = "تعذر النسخ";
   }
-  return `${CONFIG.formUrl}?${params.toString().replace(/\+/g, "%20")}`;
+  setTimeout(() => (btn.textContent = label), 2000);
 }
 
 /* ---------- submit / review ---------- */
@@ -707,14 +711,11 @@ $("f").addEventListener("submit", (e) => {
     return;
   }
   se.hidden = true;
-  const data = collect();
-  const rows = Object.entries(data).filter(([, v]) => v);
-  const table = $("reviewTable");
-  table.replaceChildren(...rows.map(([k, v]) => {
+  $("reviewTable").replaceChildren(...summaryRows().map(([l, v, isLtr]) => {
     const tr = document.createElement("tr");
-    const th = document.createElement("th"); th.textContent = LABELS[k];
+    const th = document.createElement("th"); th.textContent = l;
     const td = document.createElement("td"); td.textContent = v;
-    if (/^(bookingCode|bookingNumber|tickets|vouchers|mobile|nationalId|iban)$/.test(k)) td.className = "ltr";
+    if (isLtr) td.className = "ltr";
     tr.append(th, td);
     return tr;
   }));
@@ -725,19 +726,10 @@ $("f").addEventListener("submit", (e) => {
 
 $("editBtn").addEventListener("click", () => { $("review").hidden = true; $("f").hidden = false; });
 
-$("sendBtn").addEventListener("click", () => {
-  window.open(buildUrl(collect()), "_blank", "noopener");
-});
+document.querySelectorAll("[data-copy]").forEach((btn) =>
+  btn.addEventListener("click", () => copy(btn.dataset.copy, btn)));
 
-$("copyBtn").addEventListener("click", async () => {
-  const text = Object.entries(collect()).filter(([, v]) => v).map(([k, v]) => `${LABELS[k]}: ${v}`).join("\n");
-  try { await navigator.clipboard.writeText(text); $("copyBtn").textContent = "تم النسخ ✓"; }
-  catch { $("copyBtn").textContent = "تعذر النسخ"; }
-  setTimeout(() => ($("copyBtn").textContent = "نسخ البيانات"), 2000);
-});
-
-$("resetBtn").addEventListener("click", () => {
-  if (!confirm("مسح جميع البيانات المدخلة؟")) return;
+function resetForm() {
   $("f").reset();
   touched.clear();
   document.querySelectorAll(".field").forEach((b) => { b.classList.remove("invalid", "valid"); b.querySelector(".err").textContent = ""; });
@@ -749,6 +741,18 @@ $("resetBtn").addEventListener("click", () => {
   fieldBox("iban").querySelector(".bank-detected").textContent = "";
   for (const [id, max] of Object.entries(counters)) updateCount(id, max);
   $("summaryError").hidden = true;
+}
+
+$("resetBtn").addEventListener("click", () => {
+  if (confirm("مسح جميع البيانات المدخلة؟")) resetForm();
+});
+
+$("newBtn").addEventListener("click", () => {
+  if (!confirm("بدء طلب جديد؟ سيتم مسح البيانات الحالية.")) return;
+  resetForm();
+  $("review").hidden = true;
+  $("f").hidden = false;
+  window.scrollTo({ top: 0 });
 });
 </script>
 </body>
