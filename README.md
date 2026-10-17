@@ -11,7 +11,7 @@ page opens the official Microsoft Form **already filled in**, and the agent pres
 | رقم الحجز (type) | Required choice; shows only the matching field (not sent to Microsoft Forms) |
 | رمز الحجز | Exactly 6 chars, A–Z / 0–9, auto-uppercased, must contain a letter |
 | رقم الحجز | Exactly 12 digits |
-| رقم التذاكر | One box per ticket (add / remove, max 8); each exactly 10 digits starting with `065`, no duplicates |
+| رقم التذاكر | One box per ticket (add / remove, max 8); each exactly 11 digits starting with `065`; the leading `0` is already typed in every box; no duplicates |
 | الجوال | Country code picked from a list (default +966); number checked against that country's mobile format; sent as `+966512345678` |
 | رقم القسيمة/القسائم | Optional. One box per voucher (max 8); each exactly 10 digits starting with `0652`, no duplicates |
 | رقم الهوية | 10 digits, starts with 1 or 2, checksum verified (`1000000000` is always accepted; see `CONFIG.allowedIds`) |

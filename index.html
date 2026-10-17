@@ -70,7 +70,7 @@
   .count { direction: ltr; unicode-bidi: isolate; }
   button.small { padding: 8px 14px; font-size: .9rem; }
   .ltr-text { direction: ltr; text-align: left; }
-  .ltr { direction: ltr; text-align: left; font-family: ui-monospace, Consolas, monospace; letter-spacing: .5px; }
+  .ltr { unicode-bidi: isolate; direction: ltr; text-align: left; font-family: ui-monospace, Consolas, monospace; letter-spacing: .5px; }
   .invalid input, .invalid select, .invalid textarea { border-color: var(--error); background: var(--error-bg); }
   .valid input, .valid select, .valid textarea { border-color: var(--ok); }
   .err { color: var(--error); font-size: .85rem; margin-top: 6px; min-height: 0; }
@@ -135,7 +135,7 @@
 
     <div class="field" data-f="tickets">
       <span class="legend">رقم التذاكر المراد استرجاعها<span class="req">*</span></span>
-      <p class="hint">كل رقم تذكرة يبدأ بـ <b class="ltr">065</b> ويتكون من 10 أرقام بالضبط. يمكن إضافة 8 تذاكر كحد أقصى.</p>
+      <p class="hint">كل رقم تذكرة يبدأ بـ <b class="ltr">065</b> ويتكون من 11 رقمًا بالضبط (الصفر الأول مكتوب مسبقًا). يمكن إضافة 8 تذاكر كحد أقصى.</p>
       <div id="ticketList" class="tickets"></div>
       <div class="ticket-bar">
         <button type="button" class="secondary small" id="addTicket">+ إضافة تذكرة</button>
@@ -190,7 +190,7 @@
 
     <div class="field" data-f="iban">
       <label for="iban">رقم الايبان<span class="req">*</span></label>
-      <p class="hint">24 خانة، مثال: SA0380000000608010167519. للاسترجاع على البطاقات الائتمانية (أمريكان إكسبريس، فيزا، ماستركارد...) أدخل <b class="ltr">SA000000000000000000000</b></p>
+      <p class="hint">24 خانة، مثال: <b class="ltr">SA0380000000608010167519</b>. للاسترجاع على البطاقات الائتمانية (أمريكان إكسبريس، فيزا، ماستركارد...) أدخل <b class="ltr">SA000000000000000000000</b></p>
       <input type="text" id="iban" class="ltr" maxlength="29" autocomplete="off" spellcheck="false" placeholder="SA00 0000 0000 0000 0000 0000">
       <div class="meta"><span class="bank-detected"></span><span class="count"></span></div>
       <div class="err"></div>
@@ -268,7 +268,8 @@ const CONFIG = {
   },
   // Booking format labels (shown on the review screen only; the Microsoft form has no such question)
   bookingChoices: { code: "أرقام وحروف (6 خانات)", number: "أرقام فقط (12 خانة)" },
-  tickets:  { prefix: "065",  length: 10, maxCount: 8 },
+  // prefill: digits already typed in every new box (cannot be deleted)
+  tickets:  { prefix: "065",  length: 11, maxCount: 8, prefill: "0" },
   vouchers: { prefix: "0652", length: 10, maxCount: 8 },
   // ID numbers accepted even though they fail the checksum
   allowedIds: ["1000000000"],
@@ -553,7 +554,9 @@ $("mobile").addEventListener("focusout", () => {
 // A list of fixed-length numbers sharing a prefix, with add / remove rows.
 // Required lists flag empty rows on submit; optional lists ignore them.
 function makeNumberList({ name, listId, addId, countId, itemLabel, cfg, required }) {
-  const { prefix, length, maxCount } = cfg;
+  const { prefix, length, maxCount, prefill = "" } = cfg;
+  // A box holding only the prefilled digits counts as empty
+  const valueOf = (inp) => (inp.value === prefill ? "" : inp.value);
   const list = $(listId);
   const inputs = () => [...list.querySelectorAll("input")];
 
@@ -578,10 +581,19 @@ function makeNumberList({ name, listId, addId, countId, itemLabel, cfg, required
       <button type="button" class="remove" title="حذف" aria-label="حذف">×</button>`;
     const inp = row.querySelector("input");
     const len = row.querySelector(".len");
+    inp.value = prefill;
+    len.textContent = `${prefill.length}/${length}`;
     inp.addEventListener("input", () => {
-      inp.value = onlyDigits(inp.value).slice(0, length);
+      let d = onlyDigits(inp.value);
+      if (!d.startsWith(prefill)) d = prefill + d;
+      inp.value = d.slice(0, length);
       len.textContent = `${inp.value.length}/${length}`;
       len.classList.toggle("full", inp.value.length === length && inp.value.startsWith(prefix));
+    });
+    // Keep the caret after the prefilled digits
+    inp.addEventListener("focus", () => {
+      const end = inp.value.length;
+      requestAnimationFrame(() => inp.setSelectionRange(end, end));
     });
     // Enter on a complete number adds the next row
     inp.addEventListener("keydown", (e) => {
@@ -614,7 +626,7 @@ function makeNumberList({ name, listId, addId, countId, itemLabel, cfg, required
     const errors = [];
     const seen = new Map();
     all.forEach((inp, i) => {
-      const v = inp.value;
+      const v = valueOf(inp);
       const n = Math.min(v.length, prefix.length);
       let msg = "";
       if (!v) msg = force && required ? "فارغة" : "";
@@ -627,7 +639,7 @@ function makeNumberList({ name, listId, addId, countId, itemLabel, cfg, required
     return errors.join(" — ");
   }
 
-  const values = () => inputs().map((i) => i.value).filter(Boolean);
+  const values = () => inputs().map(valueOf).filter(Boolean);
 
   $(addId).addEventListener("click", () => { add(); check(name); });
   reset();
