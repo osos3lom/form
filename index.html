@@ -241,7 +241,6 @@ const CONFIG = {
   q: {
     firstName:     "rf6eaafa775a84b008b4dd4590a613800",
     lastName:      "rbdc36487e9714064aef2af0db88b9781",
-    bookingType:   "r457d3447c16744dba20c893f48dd86d2",
     bookingCode:   "ra67d09726d95451daf0eb943f61f998e",
     bookingNumber: "r91871181bf0f4a7aaaa57a46261b4842",
     tickets:       "rc478b3d427c44fba90fbd73f3db98a0e",
@@ -253,10 +252,8 @@ const CONFIG = {
     payment:       "r6c8c7c57a23b4dec827acf7fa8bfab6e",
     notes:         "reeda0b1e59514eaeba2b0b4c760e084e",
   },
-  // Exact choice texts in the Microsoft form
+  // Booking format labels (shown on the review screen only; the Microsoft form has no such question)
   bookingChoices: { code: "أرقام وحروف (6 خانات)", number: "أرقام فقط (12 خانة)" },
-  // Microsoft pre-filled links wrap choice answers in double quotes
-  quoteChoices: true,
   tickets: { length: 10, maxCount: 8 },
   // Saudi bank codes = IBAN digits 5-6
   banks: {
@@ -648,9 +645,7 @@ const LABELS = {
 function buildUrl(data) {
   const params = new URLSearchParams({ id: CONFIG.formId });
   for (const [k, v] of Object.entries(data)) {
-    if (!v) continue;
-    const val = k === "bookingType" && CONFIG.quoteChoices ? `"${v}"` : v;
-    params.append(CONFIG.q[k], val);
+    if (v && CONFIG.q[k]) params.append(CONFIG.q[k], v);
   }
   return `${CONFIG.formUrl}?${params.toString().replace(/\+/g, "%20")}`;
 }

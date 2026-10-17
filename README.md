@@ -45,6 +45,7 @@ cannot post responses silently. Pre-filled links are the supported way to pass d
 
 - Validation runs in the browser. Anyone who has the original Microsoft Forms link can
   still bypass it, so share only the GitHub Pages link with agents.
-- If a field does not pre-fill, open the form in Microsoft Forms → **⋯ → Get pre-filled URL**,
-  fill a sample, and compare the generated link's format with `buildUrl()` (e.g. set
-  `quoteChoices` to `false` if choice answers appear without quotes).
+- Pre-filled links must be turned on in Microsoft Forms (**⋯ → Get pre-filled URL**),
+  otherwise the official form opens empty.
+- If questions are added or removed in Microsoft Forms, update the question IDs in `CONFIG.q`.
+  The booking-format choice exists only on this page; it is not sent to Microsoft Forms.
